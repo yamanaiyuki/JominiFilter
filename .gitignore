@@ -3,3 +3,6 @@ build
 nbproject
 .gradle
 .nb-gradle
+/bin/
+.classpath
+.project
