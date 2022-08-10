@@ -62,9 +62,9 @@ public class JominiItem {
 			i++;
 		}
 
-		// 先頭のスペース/タブをスキップする
+		// 先頭のスペース/タブをスキップ
 		while (sa[i] <= ' ') {
-			if (i == length - 1) {
+			if (i >= length - 1) {
 				// 終端まできた→空行だった
 				return;
 			}
@@ -80,34 +80,28 @@ public class JominiItem {
 		}
 
 		beginKey = i;
-		if (i == length - 1) {
-			// 終端まできたのでendKeyを設定して終わる
-			endKey = length - 1;
-			return;
-		}
-		i++;
 
-		// 次のスペースまでスキップする
-		while (sa[i] != ' ') {
+		// 次のスペース/タブがくるまでKeyなのでスキップ
+		do {
 			endKey = i;
-			if (i == length - 1) {
+			if (i >= length - 1) {
 				// 終端まできたので終わる
 				return;
 			}
 			i++;
-		}
+		} while (sa[i] > ' ');
 
-		// 次の"までスキップする
-		while (sa[i] != '"') {
-			if (i == length - 1) {
-				// 終端まできたので終わる
+		// スペース/タブがなくなるまでスキップ
+		while (sa[i] <= ' ') {
+			if (i >= length - 1) {
+				// 終端まできた→空行だった
 				return;
 			}
 			i++;
 		}
 
 		// 以降は値が入ってるはず
-		// 最後が"で終わってるかの判定はしない
+		// 先頭or最後が"かの判定はしない
 		beginValue = i;
 		endValue = line.length();
 	}
@@ -122,7 +116,7 @@ public class JominiItem {
 		}
 		return line.substring(beginComment, endComment);
 	}
-	
+
 	public String getKey() {
 		if (beginKey < 0 || endKey < beginKey) {
 			return "";
@@ -143,7 +137,7 @@ public class JominiItem {
 		// 再解析
 		Parse(p + value);
 	}
-	
+
 	public String getLine() {
 		return line;
 	}
