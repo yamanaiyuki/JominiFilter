@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
 
+import org.omegat.core.Core;
 import org.omegat.filters2.AbstractFilter;
 import org.omegat.filters2.FilterContext;
 import org.omegat.filters2.Instance;
@@ -11,6 +12,9 @@ import org.omegat.filters2.TranslationException;
 import org.omegat.util.LinebreakPreservingReader;
 
 /*
+ * 詳細は
+ * https://ck3.paradoxwikis.com/Localization
+ * 
  * l_english:
  *  evergreen_decision:0 "常緑を獲得"
  * 
@@ -20,8 +24,8 @@ import org.omegat.util.LinebreakPreservingReader;
  * 前半がキー、後半がバリュー
  * 
  * キーについて
- * コロンを挟んで数字がつく、大抵は0になっている、ない場合もある
- * (※YAMLだとこの数字が原因でパースエラーになる)
+ * コロンを挟んでバージョントラックング用の数字がつく、大抵は0になっている、ない場合もある
+ * (※YAMLパーサーだとこの数字が原因でパースエラーになる)
  * 
  * バリューについて
  * ""で囲まれている
@@ -30,11 +34,16 @@ import org.omegat.util.LinebreakPreservingReader;
  * 
  * #以降はコメント
  * 可読性のため空行をあけることがある
+ * 
+ * インラインコメントには未対応
+ * #にはコメント判定以外に強調など修飾子で使われることがある(例:#EMP Emphasis here #!)
+ * コメント行でないと判定した場合はインラインコメントも原文とみなして処理しないことにした
+ * そうしないと人為的に文法ミス(文末の"つけ忘れ)でエラーになってしまう
  */
 public class JominiFilter extends AbstractFilter {
 
 	public static void loadPlugins() {
-		org.omegat.core.Core.registerFilterClass(JominiFilter.class);
+		Core.registerFilterClass(JominiFilter.class);
 	}
 
 	public static void unloadPlugins() {
@@ -42,7 +51,7 @@ public class JominiFilter extends AbstractFilter {
 
 	@Override
 	public String getFileFormatName() {
-		return "Jomini YML Filter";
+		return "Jomini Localization YML";
 	}
 
 	@Override
@@ -109,13 +118,18 @@ public class JominiFilter extends AbstractFilter {
 				// 両端の"を外す
 				char[] arr = value.toCharArray();
 				int length = arr.length;
+				boolean is_start = false;
+				boolean is_end = false;
 				int start = 0;
-				int end = arr.length - 1;
-				if (arr[0] == '"') {
+				int end = length - 1;
+				
+				if (arr[start] == '"') {
+					is_start = true;
 					start = 1;
 					length--;
 				}
 				if (arr[end] == '"') {
+					is_end = true;
 					length--;
 				}
 				String trimed = length <= 0 ? "" : new String(arr, start, length);
@@ -125,7 +139,7 @@ public class JominiFilter extends AbstractFilter {
 
 				// 翻訳が返ってくるので書き込む
 				// 両脇に"を付与する
-				item.setValue("\"" + trans + "\"");
+				item.setValue((is_start ? "\"" : "") + trans + (is_end ? "\"" : ""));
 				outFile.write(item.getLine() + lbpr.getLinebreak());
 			}
 		} finally {

@@ -1,1 +1,1 @@
-rootProject.name = "plugin-jomini"
+rootProject.name = "jomini-plugin"
