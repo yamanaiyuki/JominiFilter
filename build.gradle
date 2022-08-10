@@ -12,7 +12,7 @@ version = '0.1'
 
 omegat {
     version = "5.2.0"
-    pluginClass = "org.omegat.filters2.text.dokuwiki.DokuWikiFilter"
+    pluginClass = "com.paradoxinteractive.lib.omegat.JominiFilter"
 }
 
 dependencies {
@@ -37,4 +37,10 @@ distributions {
             from('README.md', 'COPYING', 'CHANGELOG.md')
         }
     }
+}
+
+apply plugin: 'java'
+
+tasks.withType(JavaCompile) {
+    options.encoding = 'UTF-8'
 }
