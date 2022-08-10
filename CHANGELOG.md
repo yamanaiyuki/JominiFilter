@@ -1,14 +1,15 @@
 # Change Log
-All notable changes to this project will be documented in this file.
+jarを見ただけでバージョン毎の差がわからないと修正が困難になるので変更点を記録する。
+書式は [Keep a Changelog](http://keepachangelog.com/) に基づく。
 
-## [Unreleased]
+なおバージョンは大きな機能が追加されたらメジャーバージョンを
+バグフィックスの場合はマイナーバージョンを更新する。
+[Semantic Versioning](http://semver.org/) には準拠しない。
 
-### Add
-- foo
-- boo
-
+## [0.2] - 2022-08-11
 ### Changed
+- 空白/タブの判定方法を修正
 
-### Fixed
-
-[Unreleased]: https://github.com/miurahr/omegat-plugin-skelton/compare/v0.1...HEAD
+## [0.1] - 2022-08-10
+### Added
+- Initial release
