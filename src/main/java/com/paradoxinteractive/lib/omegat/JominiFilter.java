@@ -51,7 +51,7 @@ public class JominiFilter extends AbstractFilter {
 
 	@Override
 	public String getFileFormatName() {
-		return "Jomini Localization YML";
+		return "Jomini YML";
 	}
 
 	@Override
