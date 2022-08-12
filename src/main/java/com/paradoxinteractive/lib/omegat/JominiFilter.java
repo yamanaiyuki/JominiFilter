@@ -122,12 +122,20 @@ public class JominiFilter extends AbstractFilter {
 				boolean is_end = false;
 				int start = 0;
 				int end = length - 1;
-				
+
 				if (arr[start] == '"') {
 					is_start = true;
 					start = 1;
 					length--;
 				}
+				// 末尾に余計な空白やタブがついてる場合がある
+				int extra = 0;
+				while (arr[end] <= ' ') {
+					extra++;
+					end--;
+					length--;
+				}
+				// 末尾に"をつけ忘れたりインラインコメントだったりする場合がある
 				if (arr[end] == '"') {
 					is_end = true;
 					length--;
@@ -139,7 +147,8 @@ public class JominiFilter extends AbstractFilter {
 
 				// 翻訳が返ってくるので書き込む
 				// 両脇に"を付与する
-				item.setValue((is_start ? "\"" : "") + trans + (is_end ? "\"" : ""));
+				String extra_str = extra > 0 ? new String(arr, arr.length - 1 - extra, extra) : "";
+				item.setValue((is_start ? "\"" : "") + trans + (is_end ? "\"" : "") + extra_str);
 				outFile.write(item.getLine() + lbpr.getLinebreak());
 			}
 		} finally {
