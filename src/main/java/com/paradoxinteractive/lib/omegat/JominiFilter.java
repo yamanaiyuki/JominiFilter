@@ -115,7 +115,36 @@ public class JominiFilter extends AbstractFilter {
 					continue;
 				}
 
+				// 稀なケースだが
+				// 「""」(引用符のみ)
+				// 「"" 」(引用符のみと任意の空白)
+				// 「"」(引用符一個だけ)
+				// 「" 」(引用符一個だけと任意の空白)
+				// 「" "」(空白)
+				// 「" " 」(空白と任意の空白)
+				// という場合がある
+				// いずれもスキップする
+				String temp = value.trim();
+				if (temp.startsWith("\"") && temp.endsWith("\"")) {
+					if (temp.length() <= 2) {
+						outFile.write(line + lbpr.getLinebreak());
+						continue;
+					}
+					// 両端の""を外す
+					String temp2 = temp.substring(1, temp.length() - 1);
+					if (temp2.trim().length() == 0) {
+						outFile.write(line + lbpr.getLinebreak());
+						continue;
+					}
+				}
+
 				// 両端の"を外す
+				// ここまできてるのは
+				// 「"あいう"」(正しい書式)
+				// 「"あいう" 」(正しい書式だが末尾に変な空白つけた)
+				// 「"あいう" #なんかコメント」(インラインコメントつき)
+				// 「"あいう #なんかコメント」(インラインコメントつけたが"で閉じ忘れてる)
+				// 「"あいう」(最後の"を忘れてる)
 				char[] arr = value.toCharArray();
 				int length = arr.length;
 				boolean is_start = false;
@@ -128,6 +157,7 @@ public class JominiFilter extends AbstractFilter {
 					start = 1;
 					length--;
 				}
+
 				// 末尾に余計な空白やタブがついてる場合がある
 				int extra = 0;
 				while (arr[end] <= ' ') {
@@ -135,6 +165,8 @@ public class JominiFilter extends AbstractFilter {
 					end--;
 					length--;
 				}
+				String extra_str = extra == 0 ? "" : new String(arr, arr.length - 1 - extra, extra);
+
 				// 末尾に"をつけ忘れたりインラインコメントだったりする場合がある
 				if (arr[end] == '"') {
 					is_end = true;
@@ -147,7 +179,6 @@ public class JominiFilter extends AbstractFilter {
 
 				// 翻訳が返ってくるので書き込む
 				// 両脇に"を付与する
-				String extra_str = extra > 0 ? new String(arr, arr.length - 1 - extra, extra) : "";
 				item.setValue((is_start ? "\"" : "") + trans + (is_end ? "\"" : "") + extra_str);
 				outFile.write(item.getLine() + lbpr.getLinebreak());
 			}

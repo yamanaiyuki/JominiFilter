@@ -1,73 +1,51 @@
-# OmegaT plugin development skeleton
+# Jomini YML プラグイン
 
-## How to get skeleton into your project
+Paradox Interactive社のゲームエンジンClausewitzのローカライズファイルをOmegaTで読み込み、作業可能にします。
 
-It is recommend to use `Use this template` button on upper-right side of github project page,
-to create your project repository.
+## インストール
 
-![](https://docs.github.com/assets/images/help/repository/use-this-template-button.png)
+jomini-pluginX.X.jar(Xはバージョン番号)
+をインストールしたOmegatTのpluginフォルダに入れてOmegaTを起動します。
 
-## Gradle DSL
+## 使い方と設定
 
-There are two examples in skeleton; Groovy DSL(`build.gradle`) and Kotlin DSL(`build.gradle.kts`)
-When you prefer Groovy DSL, please rename `build.gradle.disabled` to `build.gradle` and remove `build.gradle.kts`.
+インストール成功していれば、設定不要です。
+YAMLと同じ拡張子なためOkapi Filters for OmegaTと競合することがあります。Okapi Filtersを無効にしてください。
 
-## Where you should change?
+## OmegaTの設定について注意事項
 
-Here is a hint for modifications.
+設定＞文節化規則にて
+言語名
+初期値
+前方の正規表現
+[\.\?\!]+
+後方の正規表現
+\s
+にチェックが入っていますので、外して使います。
 
-- Source code: `src/main/<lang>/*`
-- Test code: `src/test/<lang>/*` and `src/test/resources/*`
-- Project.name in `settings.gradle`
-- Properties: description, title, website and category
-- Plugin Main class name in `build.gradle.kts`.
-- Coding rules: `config/checkstyle/checkstyle.xml`
+気を利かせて英語の長文を分割し(文節化)、翻訳後に文の間のスペースを削ってくれています。
+がローカライズにおいて不要な設定なので無効にします。
+もちろんデフォルト設定のままでも構いませんが、文中でのアイコン表示のように、勝手にスペースが削られ詰められると困ることがあります。
 
-## Build system
+## 専用の文節化規則を追加する
 
-This skeleton use a Gradle build system as same as OmegaT version 4.3.0 and later.
+上記のようなデフォルト設定の変更はいじりたくなくて、専用の文節化規則を追加することでも調節可能です。
+中国語(Chinese)と初期値の中間にオリジナルな規則集を追加します。
 
-## Dependency
+言語名
+適当な何か(ここではJominiYML用)
+言語コードの正規表現
+.*
 
-OmegaT and dependencies are located on remote maven repositories.
-It is necessary to connect the internet to compile your project.
+前方の正規表現
+@\w+!
+後方の正規表現
+\s
 
-Current skeleton example refers OmegaT 5.2.0.
+これらはOmegaT設定の一例で、状況に応じて自分で決めることができます。
 
-All complex configurations to refer OmegaT core are handled by
-`gradle-omegat-plugin`.
+## ライセンス
 
-## FatJar(ShadowJar)
+(c) 2022 yamanaiyuki
 
-OmegaT considered a plugin is a single jar file. If it is depend on some libraries, 
-you should ship your plugin with these libraries.
-It is why generating a FatJar, a single jar file with all runtime dependencies
-which is not provided with OmegaT.
-
-`gradle-omegat-plugin` offers special gradle configuration `ParckIntoJar`.
-When specified it, gradle will generate a proper FatJar for you.
-
-
-## Where is a built artifact?
-
-You can find distribution files in `build/distributions/*.zip`.
-Also you can find jar files at `build/libs/`
-
-## Test report
-
-You will find a test results report at `build/reports/` and can show it with your favorite web browser.
-
-## Github actions
-
-There is an example script to use Github Actions for CI/CD.
-
-
-## Installation
-
-You can get a plugin jar file from zip distribution file.
-OmegaT plugin should be placed in `$HOME/.omegat/plugin` or `C:\Program Files\OmegaT\plugin`
-depending on your operating system.
-
-## License
-
-This project is distributed under the GNU general public license version 3 or later.
+GNU general public license version 3もしくはそれ以降です。
