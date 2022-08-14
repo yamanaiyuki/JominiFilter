@@ -70,12 +70,6 @@ public class JominiFilter extends AbstractFilter {
 	}
 
 	@Override
-	protected boolean isFileSupported(BufferedReader reader) {
-		// 常に許可
-		return true;
-	}
-
-	@Override
 	protected void processFile(BufferedReader inFile, BufferedWriter outFile, FilterContext fc)
 			throws IOException, TranslationException {
 		LinebreakPreservingReader lbpr = null;
@@ -159,13 +153,12 @@ public class JominiFilter extends AbstractFilter {
 				}
 
 				// 末尾に余計な空白やタブがついてる場合がある
-				int extra = 0;
+				String extra_str = "";
 				while (arr[end] <= ' ') {
-					extra++;
+					extra_str = arr[end] + extra_str;
 					end--;
 					length--;
 				}
-				String extra_str = extra == 0 ? "" : new String(arr, arr.length - 1 - extra, extra);
 
 				// 末尾に"をつけ忘れたりインラインコメントだったりする場合がある
 				if (arr[end] == '"') {
