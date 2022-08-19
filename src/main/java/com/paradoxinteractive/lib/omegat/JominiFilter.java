@@ -69,6 +69,11 @@ public class JominiFilter extends AbstractFilter {
 		return false;
 	}
 
+    @Override
+    protected boolean requirePrevNextFields() {
+        return true;
+    }
+
 	@Override
 	protected void processFile(BufferedReader inFile, BufferedWriter outFile, FilterContext fc)
 			throws IOException, TranslationException {
