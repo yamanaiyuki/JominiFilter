@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
 
+import org.apache.commons.io.IOUtils;
 import org.omegat.core.Core;
 import org.omegat.filters2.AbstractFilter;
 import org.omegat.filters2.FilterContext;
@@ -35,10 +36,10 @@ import org.omegat.util.LinebreakPreservingReader;
  * #以降はコメント
  * 可読性のため空行をあけることがある
  * 
- * インラインコメントには未対応
+ * インラインコメント
  * #にはコメント判定以外に強調など修飾子で使われることがある(例:#EMP Emphasis here #!)
- * コメント行でないと判定した場合はインラインコメントも原文とみなして処理しないことにした
- * そうしないと人為的に文法ミス(文末の"つけ忘れ)でエラーになってしまう
+ * 「"」の数が偶数個の時「#」がみつかった場合にインラインコメントとみなす
+ * 人為的な文法ミス(文頭/文末の"つけ忘れ)にはできる限り対応する
  */
 public class JominiFilter extends AbstractFilter {
 
@@ -69,32 +70,27 @@ public class JominiFilter extends AbstractFilter {
 		return false;
 	}
 
-    @Override
-    protected boolean requirePrevNextFields() {
-        return true;
-    }
+	@Override
+	protected boolean requirePrevNextFields() {
+		return true;
+	}
 
 	@Override
 	protected void processFile(BufferedReader inFile, BufferedWriter outFile, FilterContext fc)
 			throws IOException, TranslationException {
 		LinebreakPreservingReader lbpr = null;
 		String line;
-
+		
 		try {
 			lbpr = new LinebreakPreservingReader(inFile);
 
 			while ((line = lbpr.readLine()) != null) {
+		        //Log.log("[jomini]line=" + line);
 				JominiItem item = new JominiItem();
 				item.Parse(line);
 
 				// 空白だけの行の場合はスキップ
 				if (item.isEmpty()) {
-					outFile.write(line + lbpr.getLinebreak());
-					continue;
-				}
-
-				// コメント行の場合はスキップ
-				if (item.getComment().length() != 0) {
 					outFile.write(line + lbpr.getLinebreak());
 					continue;
 				}
@@ -115,12 +111,12 @@ public class JominiFilter extends AbstractFilter {
 				}
 
 				// 稀なケースだが
-				// 「""」(引用符のみ)
-				// 「"" 」(引用符のみと任意の空白)
-				// 「"」(引用符一個だけ)
-				// 「" 」(引用符一個だけと任意の空白)
-				// 「" "」(空白)
-				// 「" " 」(空白と任意の空白)
+				// 「""」 (引用符のみ)
+				// 「"" 」 (引用符のみと任意の空白)
+				// 「"」 (引用符一個だけ)
+				// 「" 」 (引用符一個だけと任意の空白)
+				// 「" "」 (空白)
+				// 「" " 」 (空白と任意の空白)
 				// という場合がある
 				// いずれもスキップする
 				String temp = value.trim();
@@ -137,13 +133,22 @@ public class JominiFilter extends AbstractFilter {
 					}
 				}
 
-				// 両端の"を外す
 				// ここまできてるのは
-				// 「"あいう"」(正しい書式)
-				// 「"あいう" 」(正しい書式だが末尾に変な空白つけた)
-				// 「"あいう" #なんかコメント」(インラインコメントつき)
-				// 「"あいう #なんかコメント」(インラインコメントつけたが"で閉じ忘れてる)
-				// 「"あいう」(最後の"を忘れてる)
+				// 「"あいう"」 (正しい書式) <*>
+				// 「"あいう" 」 (正しい書式だが末尾に変な空白つけた) <*>
+				// 「"あいう」 (最後の"を忘れてる)
+				// 「あいう"」 (先頭の"を忘れてる)
+				// 「"あいう #なんかコメント」 (インラインコメントつけたが"で閉じ忘れてる)
+				// 「あいう」 (先頭/末尾の"を忘れてる)
+				// 「あいう #なんかコメント」 (先頭/末尾の"を忘れてる、かつインラインコメントつき)
+				//
+				// コメントと分離できてるのは
+				// 「"あいう" #なんかコメント」 (インラインコメントつき) <*>
+				// 「あいう" #なんかコメント」 (先頭の"を忘れてる、かつインラインコメントつき)
+				//
+				// 仕様として正しいのは<*>だが、それ以外もきている場合がある
+				
+				// 両端の"を外す
 				char[] arr = value.toCharArray();
 				int length = arr.length;
 				boolean is_start = false;
@@ -181,9 +186,7 @@ public class JominiFilter extends AbstractFilter {
 				outFile.write(item.getLine() + lbpr.getLinebreak());
 			}
 		} finally {
-			if (lbpr != null) {
-				lbpr.close();
-			}
+			IOUtils.closeQuietly(lbpr);
 		}
 	}
 }
